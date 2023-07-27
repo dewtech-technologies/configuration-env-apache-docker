@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: DockerFile
+    container_name: dewtech-app
+    restart: always
+    working_dir: /var/www/
+    volumes:
+      - ../src:/var/www/
+
+  apache:
+    image: php:8.2-apache
+    container_name: dewtech-apache
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - ../src:/var/www/
+      - ../src:/usr/local/apache2/htdocs
+      - ./apache:/conf/httpd.conf /usr/local/apache2/conf/httpd.conf
+    environment:
+      - APACHE_RUN_DIR=/var/run/apache2
+      - APACHE_PID_FILE=/var/run/apache2/apache2.pid
+      - APACHE_LOCK_DIR=/var/run/apache2
+      - APACHE_LOG_DIR=/var/log/apache2
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+    command: >
+      bash -c "chmod -R 755 /usr/local/apache2/htdocs && chown -R www-data:www-data /usr/local/apache2/htdocs && apache2 -D FOREGROUND"
